@@ -13,15 +13,20 @@ from kitty.tab_bar import (DrawData, ExtraData, TabBarData, as_rgb, draw_tab_wit
                            draw_tab_with_separator)
 from kitty.utils import color_as_int
 
-# The plain ⚙ is spread over two cells (narrow_symbols in tabs.conf), so it is
+# The plain ⚙ is spread over three cells (narrow_symbols in tabs.conf), so it is
 # easier to see and click; the space after it gives it room.
-GEAR = " ⚙  "
-GEAR_CELLS = 4
+GEAR = " ⚙   "
+GEAR_CELLS = 5
 MENU = os.path.expanduser("~/.local/bin/ct-config")
 GEAR_ENABLED = False
 
+# kitty runs this file more than once (every config reload makes a new module), and the
+# click hook outlives each run, so the state shared by drawing and clicking lives in
+# builtins instead of in the module.
+import builtins
+
 # Whether the ⚙ is on screen, per tab bar (it isn't when the tabs fill the bar).
-_gear_drawn: dict[int, bool] = {}
+_gear_drawn: dict[int, bool] = builtins.__dict__.setdefault("_ckt_gear_drawn", {})
 
 
 def _set_gear_drawn(screen, drawn: bool) -> None:
@@ -57,7 +62,7 @@ def _gear_click(self, args) -> bool:
 # The close mark at the end of each tab title (settings: "Close button on tabs").
 CLOSE_MARK = "×"
 # Cell of each drawn close mark -> its tab, per tab bar.
-_close_cells: dict[int, dict[int, int]] = {}
+_close_cells: dict[int, dict[int, int]] = builtins.__dict__.setdefault("_ckt_close_cells", {})
 
 
 def _set_close_cells(screen, cells: dict[int, int]) -> None:
